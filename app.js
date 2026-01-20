@@ -11,16 +11,33 @@ const eventRoutes = require("./src/routes/event.routes");
 
 const app = express();
 
-// Middleware
+// ✅ CORS FIRST - handles OPTIONS preflight
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// BODY PARSERS - BEFORE ROUTES!
+app.use(
+  express.json({
+    limit: "50mb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
+app.use(express.urlencoded({ extended: true }));
+// Handle all OPTIONS preflight requests
+app.options("*", cors());
+
+// ✅ Body parser
 app.use(express.json());
 
-// Routes
+// ✅ Routes (after CORS)
 app.use("/api/auth", authRoutes);
 app.use("/api", hotelRoutes);
 app.use("/api", eventRoutes);
@@ -30,7 +47,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Error handler (must be last)
+// ✅ Error handler (last)
 app.use(errorHandler);
 
 module.exports = app;

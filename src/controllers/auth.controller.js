@@ -1,3 +1,5 @@
+// server/src/controllers/authController.js (Complete & Fixed)
+
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -5,9 +7,10 @@ const User = require("../models/User");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // POST /api/auth/google
+// Replace googleLogin function completely:
 const googleLogin = async (req, res, next) => {
   try {
-    const { credential } = req.body; // Google ID token from frontend
+    const { credential } = req.body;
 
     if (!credential) {
       return res.status(400).json({ message: "Google credential required" });
@@ -22,18 +25,22 @@ const googleLogin = async (req, res, next) => {
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
 
-    // Find or create user
-    let user = await User.findOne({ googleId });
-
-    if (!user) {
-      user = await User.create({
+    // UPSERT: Find OR create (no duplicate errors!)
+    const user = await User.findOneAndUpdate(
+      { googleId },
+      {
         googleId,
-        email,
-        name,
+        email: email.toLowerCase().trim(),
+        name: name.trim(),
         avatar: picture,
         role: "admin",
-      });
-    }
+      },
+      {
+        upsert: true, // Create if not exists
+        new: true, // Return updated doc
+        runValidators: true, // Validate on upsert
+      },
+    );
 
     // Generate JWT
     const token = jwt.sign(
@@ -53,7 +60,8 @@ const googleLogin = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    console.error("❌ Auth error:", error.message);
+    res.status(400).json({ message: error.message });
   }
 };
 
