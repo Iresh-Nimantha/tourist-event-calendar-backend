@@ -9,6 +9,9 @@ const authRoutes = require("./src/routes/auth.routes");
 const hotelRoutes = require("./src/routes/hotel.routes");
 const eventRoutes = require("./src/routes/event.routes");
 
+// ✅ NEW: Import the eventDetails route
+const eventDetailsRoutes = require("./src/routes/eventDetails.routes");
+
 const app = express();
 
 // ✅ CORS FIRST - handles OPTIONS preflight
@@ -41,6 +44,9 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", hotelRoutes);
 app.use("/api", eventRoutes);
+
+// ✅ NEW: Add combined event + hotel details route
+app.use("/api", eventDetailsRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

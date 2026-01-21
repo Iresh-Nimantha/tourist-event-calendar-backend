@@ -28,10 +28,11 @@ const getMyEvents = async (req, res, next) => {
       return res.json([]);
     }
 
-    const events = await Event.find({ hotelId: req.hotel._id }).sort({
-      date: -1,
+    // Transform MongoDB $date → string
+    const events = await Event.find({ isPublished: true }).lean();
+    events.forEach((event) => {
+      event.date = new Date(event.date).toISOString().split("T")[0]; // "2026-02-15"
     });
-
     res.json(events);
   } catch (error) {
     next(error);
