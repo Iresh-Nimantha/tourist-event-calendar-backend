@@ -8,6 +8,16 @@ const getMyHotel = async (req, res) => {
   res.json(req.hotel);
 };
 
+// GET /api/hotels (public)
+const getAllHotelsPublic = async (req, res, next) => {
+  try {
+    const hotels = await Hotel.find().sort({ createdAt: -1 });
+    res.json(hotels);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // PUT /api/me/hotel (create or update)
 const upsertMyHotel = async (req, res, next) => {
   try {
@@ -59,4 +69,9 @@ const getHotelById = async (req, res, next) => {
   }
 };
 
-module.exports = { getMyHotel, upsertMyHotel, getHotelById };
+module.exports = {
+  getMyHotel,
+  upsertMyHotel,
+  getHotelById,
+  getAllHotelsPublic,
+};

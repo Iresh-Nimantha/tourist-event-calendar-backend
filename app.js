@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const chatRoutes = require("./src/routes/chat.routes");
 
 const errorHandler = require("./src/middleware/error.middleware");
 
@@ -52,6 +53,9 @@ app.use("/api", eventDetailsRoutes);
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+//chat
+app.use("/chat", chatRoutes);
 
 // ✅ Error handler (last)
 app.use(errorHandler);

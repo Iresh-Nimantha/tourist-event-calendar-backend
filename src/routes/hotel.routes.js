@@ -4,6 +4,7 @@ const {
   getMyHotel,
   upsertMyHotel,
   getHotelById,
+  getAllHotelsPublic,
 } = require("../controllers/hotel.controller");
 const {
   authenticate,
@@ -45,6 +46,9 @@ router.get(
     }
   },
 );
+
+// Public routes
+router.get("/hotels", getAllHotelsPublic); // ← NEW: public list of hotels
 
 // Public routes
 router.get("/hotels/:id", getHotelById);
