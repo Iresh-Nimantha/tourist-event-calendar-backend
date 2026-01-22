@@ -6,7 +6,7 @@ const hotelSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true, // one hotel per admin
+      // Removed unique constraint to allow multiple hotels per user
     },
     name: {
       type: String,

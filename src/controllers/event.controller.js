@@ -5,16 +5,23 @@ const Event = require("../models/Event");
 // POST /api/me/events
 const createEvent = async (req, res, next) => {
   try {
-    if (!req.hotel) {
-      return res.status(400).json({ message: "Create a hotel profile first" });
+    const { hotelId, ...eventData } = req.body;
+
+    // Verify that the hotelId belongs to the user
+    const Hotel = require("../models/Hotel");
+    const hotel = await Hotel.findOne({
+      _id: hotelId,
+      ownerId: req.user._id,
+    });
+
+    if (!hotel) {
+      return res.status(400).json({ message: "Hotel not found or access denied" });
     }
 
-    const eventData = {
-      ...req.body,
-      hotelId: req.hotel._id,
-    };
-
-    const event = await Event.create(eventData);
+    const event = await Event.create({
+      ...eventData,
+      hotelId: hotel._id,
+    });
     res.status(201).json(event);
   } catch (error) {
     next(error);
@@ -24,12 +31,22 @@ const createEvent = async (req, res, next) => {
 // GET /api/me/events
 const getMyEvents = async (req, res, next) => {
   try {
-    if (!req.hotel) {
+    // Get all hotels owned by user
+    const Hotel = require("../models/Hotel");
+    const hotels = await Hotel.find({ ownerId: req.user._id }).select("_id");
+    const hotelIds = hotels.map((h) => h._id);
+
+    if (hotelIds.length === 0) {
       return res.json([]);
     }
 
+    // Fetch events belonging to any of user's hotels
+    const events = await Event.find({ hotelId: { $in: hotelIds } })
+      .populate("hotelId", "name location")
+      .sort({ date: -1 })
+      .lean();
+    
     // Transform MongoDB $date → string
-    const events = await Event.find({ isPublished: true }).lean();
     events.forEach((event) => {
       event.date = new Date(event.date).toISOString().split("T")[0]; // "2026-02-15"
     });
@@ -42,10 +59,37 @@ const getMyEvents = async (req, res, next) => {
 // PUT /api/me/events/:id
 const updateEvent = async (req, res, next) => {
   try {
-    // req.event is attached by verifyEventOwnership middleware
+    const { hotelId, ...updateData } = req.body;
+    
+    // Verify event ownership
+    const Hotel = require("../models/Hotel");
+    const hotels = await Hotel.find({ ownerId: req.user._id }).select("_id");
+    const hotelIds = hotels.map((h) => h._id);
+
+    const event = await Event.findOne({
+      _id: req.params.id,
+      hotelId: { $in: hotelIds },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found or access denied" });
+    }
+
+    // If hotelId is being updated, verify it belongs to user
+    if (hotelId) {
+      const newHotel = await Hotel.findOne({
+        _id: hotelId,
+        ownerId: req.user._id,
+      });
+      if (!newHotel) {
+        return res.status(400).json({ message: "Hotel not found or access denied" });
+      }
+      updateData.hotelId = newHotel._id;
+    }
+
     const updatedEvent = await Event.findByIdAndUpdate(
-      req.event._id,
-      req.body,
+      event._id,
+      updateData,
       { new: true, runValidators: true },
     );
 
@@ -58,7 +102,21 @@ const updateEvent = async (req, res, next) => {
 // DELETE /api/me/events/:id
 const deleteEvent = async (req, res, next) => {
   try {
-    await Event.findByIdAndDelete(req.event._id);
+    // Verify event ownership
+    const Hotel = require("../models/Hotel");
+    const hotels = await Hotel.find({ ownerId: req.user._id }).select("_id");
+    const hotelIds = hotels.map((h) => h._id);
+
+    const event = await Event.findOne({
+      _id: req.params.id,
+      hotelId: { $in: hotelIds },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found or access denied" });
+    }
+
+    await Event.findByIdAndDelete(event._id);
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
     next(error);
