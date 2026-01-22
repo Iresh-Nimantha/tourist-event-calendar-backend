@@ -11,8 +11,6 @@ const {
 const {
   authenticate,
   authorize,
-  attachHotel,
-  verifyEventOwnership,
 } = require("../middleware/auth.middleware");
 
 // Public routes (no auth required)
@@ -24,30 +22,24 @@ router.post(
   "/me/events",
   authenticate,
   authorize("admin"),
-  attachHotel,
   createEvent,
 );
 router.get(
   "/me/events",
   authenticate,
   authorize("admin"),
-  attachHotel,
   getMyEvents,
 );
 router.put(
   "/me/events/:id",
   authenticate,
   authorize("admin"),
-  attachHotel,
-  verifyEventOwnership,
   updateEvent,
 );
 router.delete(
   "/me/events/:id",
   authenticate,
   authorize("admin"),
-  attachHotel,
-  verifyEventOwnership,
   deleteEvent,
 );
 

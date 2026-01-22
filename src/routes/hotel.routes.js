@@ -1,32 +1,53 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getMyHotel,
-  upsertMyHotel,
+  getMyHotels,
+  getMyHotelById,
+  createMyHotel,
+  updateMyHotel,
+  deleteMyHotel,
   getHotelById,
   getAllHotelsPublic,
 } = require("../controllers/hotel.controller");
 const {
   authenticate,
   authorize,
-  attachHotel,
 } = require("../middleware/auth.middleware");
-const Hotel = require("../models/Hotel"); // ← ADD THIS
 
-// Admin routes
+// Admin routes - Multiple hotels per user
 router.get(
-  "/me/hotel",
+  "/me/hotels",
   authenticate,
   authorize("admin"),
-  attachHotel,
-  getMyHotel,
+  getMyHotels
 );
-router.put(
-  "/me/hotel",
+
+router.get(
+  "/me/hotels/:id",
   authenticate,
   authorize("admin"),
-  attachHotel,
-  upsertMyHotel,
+  getMyHotelById
+);
+
+router.post(
+  "/me/hotels",
+  authenticate,
+  authorize("admin"),
+  createMyHotel
+);
+
+router.put(
+  "/me/hotels/:id",
+  authenticate,
+  authorize("admin"),
+  updateMyHotel
+);
+
+router.delete(
+  "/me/hotels/:id",
+  authenticate,
+  authorize("admin"),
+  deleteMyHotel
 );
 
 // GET /api/admin/hotels (all hotels - admin only)
@@ -34,23 +55,11 @@ router.get(
   "/admin/hotels",
   authenticate,
   authorize("admin"),
-  async (req, res, next) => {
-    // ← Add 'next'
-    try {
-      const hotels = await Hotel.find() // ← Hotel (capital H)
-        .populate("ownerId", "name email")
-        .sort({ createdAt: -1 });
-      res.json(hotels);
-    } catch (error) {
-      next(error); // ← Error handling
-    }
-  },
+  getAllHotelsPublic
 );
 
 // Public routes
-router.get("/hotels", getAllHotelsPublic); // ← NEW: public list of hotels
-
-// Public routes
+router.get("/hotels", getAllHotelsPublic);
 router.get("/hotels/:id", getHotelById);
 
 module.exports = router;
