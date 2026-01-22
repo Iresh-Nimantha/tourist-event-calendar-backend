@@ -41,4 +41,7 @@ const hotelSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Create non-unique index on ownerId for query performance (allows multiple hotels per user)
+hotelSchema.index({ ownerId: 1 }, { unique: false });
+
 module.exports = mongoose.model("Hotel", hotelSchema);
