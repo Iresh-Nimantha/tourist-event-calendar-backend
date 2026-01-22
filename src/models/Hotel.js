@@ -6,7 +6,7 @@ const hotelSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      // Removed unique constraint to allow multiple hotels per user
+      // No unique constraint - allows multiple hotels per user (same ownerId)
     },
     name: {
       type: String,
@@ -40,5 +40,8 @@ const hotelSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+// Create non-unique index on ownerId for query performance (allows multiple hotels per user)
+hotelSchema.index({ ownerId: 1 }, { unique: false });
 
 module.exports = mongoose.model("Hotel", hotelSchema);
