@@ -9,9 +9,12 @@ if (!GEMINI_API_KEY) {
   throw new Error("GEMINI_API_KEY is not set in environment variables");
 }
 
-// Public APIs
-const HOTELS_API = "http://localhost:5000/api/hotels";
-const EVENTS_API = "http://localhost:5000/api/events";
+// Public APIs - Use environment variable or default to localhost for development
+// For production: Set BASE_URL or API_BASE_URL in your deployment platform's environment variables
+// Example: BASE_URL=https://your-backend.onrender.com
+const BASE_URL = process.env.BASE_URL || process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+const HOTELS_API = `${BASE_URL}/api/hotels`;
+const EVENTS_API = `${BASE_URL}/api/events`;
 
 // Global conversation history (simple array for context)
 let conversationHistory = [];
