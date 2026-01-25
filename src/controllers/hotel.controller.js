@@ -3,7 +3,9 @@ const Hotel = require("../models/Hotel");
 // GET /api/me/hotels - Get all hotels owned by user
 const getMyHotels = async (req, res, next) => {
   try {
-    const hotels = await Hotel.find({ ownerId: req.user._id }).sort({ createdAt: -1 });
+    const hotels = await Hotel.find({ ownerId: req.user._id }).sort({
+      createdAt: -1,
+    });
     res.json(hotels);
   } catch (error) {
     next(error);
@@ -85,7 +87,7 @@ const updateMyHotel = async (req, res, next) => {
         email,
         imageUrl,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!hotel) {

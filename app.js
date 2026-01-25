@@ -17,8 +17,8 @@ const app = express();
 
 // ✅ CORS FIRST - handles OPTIONS preflight
 // Support multiple origins for different environments
-const allowedOrigins = process.env.FRONTEND_URL 
-  ? process.env.FRONTEND_URL.split(",").map(url => url.trim())
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(",").map((url) => url.trim())
   : ["http://localhost:5173"];
 
 app.use(
@@ -26,8 +26,11 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        allowedOrigins.includes("*")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
