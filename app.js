@@ -28,7 +28,9 @@ const allowedOrigins = [
 // Add origins from environment variable (comma-separated)
 // Support both ALLOWED_ORIGINS and FRONTEND_URL for backward compatibility
 if (process.env.ALLOWED_ORIGINS) {
-  const envOrigins = process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim());
+  const envOrigins = process.env.ALLOWED_ORIGINS.split(",").map((o) =>
+    o.trim(),
+  );
   allowedOrigins.push(...envOrigins);
 }
 if (process.env.FRONTEND_URL) {
@@ -62,13 +64,19 @@ app.use(
       const normalizedOrigin = normalizeOrigin(origin);
 
       // In development, allow all localhost origins
-      if (isDevelopment && /^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin)) {
+      if (
+        isDevelopment &&
+        /^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin)
+      ) {
         return callback(null, true);
       }
 
       // Check against allowed origins (normalized)
       const normalizedAllowed = allowedOrigins.map(normalizeOrigin);
-      if (normalizedAllowed.includes(normalizedOrigin) || vercelRegex.test(normalizedOrigin)) {
+      if (
+        normalizedAllowed.includes(normalizedOrigin) ||
+        vercelRegex.test(normalizedOrigin)
+      ) {
         console.log("✅ Allowed CORS origin:", normalizedOrigin);
         return callback(null, true);
       }
@@ -91,23 +99,29 @@ app.options(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      
+
       const normalizedOrigin = normalizeOrigin(origin);
-      
-      if (isDevelopment && /^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin)) {
+
+      if (
+        isDevelopment &&
+        /^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin)
+      ) {
         return callback(null, true);
       }
-      
+
       const normalizedAllowed = allowedOrigins.map(normalizeOrigin);
-      if (normalizedAllowed.includes(normalizedOrigin) || vercelRegex.test(normalizedOrigin)) {
+      if (
+        normalizedAllowed.includes(normalizedOrigin) ||
+        vercelRegex.test(normalizedOrigin)
+      ) {
         return callback(null, true);
       }
-      
+
       // Allow preflight for debugging in development
       if (isDevelopment) {
         return callback(null, true);
       }
-      
+
       return callback(null, true);
     },
     credentials: true,
